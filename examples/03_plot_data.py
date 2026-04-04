@@ -1,22 +1,21 @@
 """
-plot_data.py — plot a CSV log file produced by log_data.py.
+03_plot_data.py — plot a CSV log file produced by 02_log_data.py.
 
 Usage:
-    python examples/plot_data.py data/20260404_120000.csv   # specific file
-    python examples/plot_data.py                            # pick from list
+    python examples/03_plot_data.py data/20260404_120000.csv   # specific file
+    python examples/03_plot_data.py                            # pick from list
 """
 import sys
 import os
 import glob
 
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
+_ROOT = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+sys.path.insert(0, _ROOT)
 
 from analysis.plotting import load_csv, plot_all
 import matplotlib.pyplot as plt
 
-_DATA_DIR = os.path.join(
-    os.path.dirname(os.path.dirname(os.path.abspath(__file__))), "data"
-)
+_DATA_DIR = os.path.join(_ROOT, "data")
 
 
 def _pick_file() -> str:
@@ -45,7 +44,7 @@ def main():
     data     = load_csv(filepath)
     n        = len(data["elapsed_s"])
     duration = data["elapsed_s"][-1] if n > 0 else 0.0
-    print(f"Loaded {n} samples over {duration:.1f} s  —  {os.path.basename(filepath)}")
+    print(f"Loaded {n} samples over {duration:.1f} s  \u2014  {os.path.basename(filepath)}")
 
     plot_all(data, title=os.path.basename(filepath))
     plt.show()
