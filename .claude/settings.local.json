@@ -1,0 +1,10 @@
+{
+  "permissions": {
+    "allow": [
+      "Read(//c/Program Files \\(x86\\)/Data Translation/Win32/SDK//**)",
+      "Read(//c/Program Files \\(x86\\)/Data Translation/DeviceDriversEV//**)",
+      "Read(//c/Windows/SysWOW64/**)",
+      "Read(//c/Program Files \\(x86\\)/Data Translation/**)"
+    ]
+  }
+}

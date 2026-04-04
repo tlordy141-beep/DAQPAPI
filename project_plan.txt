@@ -1,0 +1,47 @@
+#### Project Overview
+
+In this project I want to make a python API for my DT9805 DAQ. This API will let me configure my channels and turn voltage readings in from the channels into useful data. I will then analyse this data using python packages such as matplotlib.
+
+#### Why am I making this API
+
+I have previously used QuickDAQ and had that system working fine with all pressure sensors and temperature sensors. But the QuickDAQ interface is limited and I want a more flexible approach. The main reason I am doing this is to learn.
+
+#### Sensor Details & DAQ Connection
+
+The DT9805 DAQ is connected to my laptop using a USB cable.
+
+I have previously used the QuickDAQ software to configure the channels and have used it successfully to get temperature and pressure readings.
+
+The DAQ will have the following sensors in the following channels below:
+
+| DAQ Channel | Sensor |
+| ----------- | -------|
+| AI1         | TC1    |
+| AI2         | TC2    |
+| AI3         | TC3    |
+| AI4         | PT1    |
+| AI5         | PT2    |
+| AI6         | PT3    |
+| AI7         | PT4    |
+
+The TCs are all T-Type thermocouples with a voltage range of -1V to +1V.
+
+The PTs are all 4-20mA PTs with a 40bar range (measuring against relative pressure). The 4-20mA ouput is wired through 240ohm shunt resistors, then this voltage is measured across the analogue input channels.
+
+#### Claude Code usage
+
+I will use claude code to help me plan, structure and write the bulk of the code in this project. However I am doing this project fundamentally to learn so I will make sure to always understand any code that is writtern and to have a strong understanding of the project as a whole.
+
+#### Project Plan
+
+This is my general plan for the project, this is subject to change as the project continues as I come across problems, complexity or find better plans.
+
+1. construct a robust workflow using vscode, github and claude code
+2. give claude code all the project context it needs to help with this project including the DAQ datasheet
+2. construct a project folder file tree with Python venv installed
+3. install the required packages with pip, including mcculw, matplotlib, numpy etc.
+4. get a basic communication with DAQ as a proof of concept, for example get a basic reading from the TC on AI1
+5. build out a robust architecture for reliable readings across all channels and a nicely structured way to configure the channels in the future, for example changing configured gain and range settings
+6. apply robust linearisation code to the voltage readings to obtain useful temperature and pressure readings
+7. make a robust workflow for analysing this data
+

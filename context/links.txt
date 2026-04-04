@@ -1,0 +1,4 @@
+#### This is a list of useful online sources for this project, this provides context for me and for claude code
+
+Using Data Translation's DT-Open Layers for Win32 SDK, with Python for Windows (From Forum):
+https://forum.digilent.com/topic/32664-using-data-translations-dt-open-layers-for-win32-sdk-with-python-for-windows/
