@@ -1,29 +1,26 @@
 """
 pressure.py — 4–20 mA pressure transducer linearisation.
 
-Hardware setup:
-  - Sensor output : 4–20 mA current loop (proportional to 0–40 bar gauge)
-  - Shunt resistor: 240 Ω  (converts current to voltage for the DAQ)
-  - Resulting voltage range:
-      4  mA × 240 Ω = 0.960 V  →  0 bar
-      20 mA × 240 Ω = 4.800 V  →  40 bar
+Physical constants (shunt resistor, current range, pressure range) are
+imported from config_hardware.py so they are configured in one place.
 
 Conversion steps:
-  1. Voltage → current:  I (mA) = V / 240 × 1000
-  2. Current → pressure: P (bar) = (I − 4) / (20 − 4) × 40
+  1. Voltage → current:  I (mA) = V / SHUNT_OHMS × 1000
+  2. Current → pressure: P (bar) = (I − I_MIN_MA) / (I_MAX_MA − I_MIN_MA) × P_MAX_BAR
 
-  Combined:  P = (V − 0.960) / (4.800 − 0.960) × 40
+  Combined:  P = (V − V_MIN) / (V_MAX − V_MIN) × P_MAX_BAR
 """
+import os
+import sys
 
-# --- Sensor and wiring constants (edit here if hardware changes) ---
-SHUNT_OHMS = 240.0   # Ω — shunt resistor
-I_MIN_MA   = 4.0     # mA — current at 0 bar (live-zero)
-I_MAX_MA   = 20.0    # mA — current at full-scale pressure
-P_MAX_BAR  = 40.0    # bar — full-scale pressure (gauge / relative)
+# Ensure the project root is on sys.path so config_hardware.py is importable.
+sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
-# Derived voltage limits
-V_MIN = I_MIN_MA  / 1000 * SHUNT_OHMS   # 0.960 V — sensor live at 0 bar
-V_MAX = I_MAX_MA  / 1000 * SHUNT_OHMS   # 4.800 V — sensor at full scale
+from config_hardware import SHUNT_OHMS, I_MIN_MA, I_MAX_MA, P_MAX_BAR
+
+# Derived voltage limits (computed once at import time)
+V_MIN: float = I_MIN_MA / 1000 * SHUNT_OHMS   # 0.960 V — voltage at 0 bar (live-zero)
+V_MAX: float = I_MAX_MA / 1000 * SHUNT_OHMS   # 4.800 V — voltage at full-scale pressure
 
 
 def pt_voltage_to_bar(voltage_v: float) -> float:
@@ -33,22 +30,22 @@ def pt_voltage_to_bar(voltage_v: float) -> float:
     Parameters
     ----------
     voltage_v : float
-        Voltage across the 240 Ω shunt resistor in volts, gain-corrected.
-        Expected range: 0.960 V (0 bar) to 4.800 V (40 bar).
+        Voltage across the shunt resistor in volts, gain-corrected by the DAQ.
+        Expected range: V_MIN (0 bar) to V_MAX (P_MAX_BAR).
 
     Returns
     -------
-    float : pressure in bar (gauge / relative).
+    float : pressure in bar (gauge).
 
     Notes
     -----
-    Values below 0.960 V indicate < 4 mA, meaning the sensor is unpowered
-    or disconnected. This returns a negative value so the caller can detect it.
-    Values above 4.800 V indicate the sensor is over-range.
+    Values below V_MIN indicate less than I_MIN_MA — the sensor is unpowered
+    or disconnected.  A negative pressure result is returned so the caller
+    can detect it (rather than clamping to zero and hiding the fault).
+    Values above V_MAX indicate over-range.
     """
-    current_ma = voltage_v / SHUNT_OHMS * 1000               # V → mA
-    pressure   = (current_ma - I_MIN_MA) / (I_MAX_MA - I_MIN_MA) * P_MAX_BAR
-    return pressure
+    current_ma = voltage_v / SHUNT_OHMS * 1000
+    return (current_ma - I_MIN_MA) / (I_MAX_MA - I_MIN_MA) * P_MAX_BAR
 
 
 def sensor_status(voltage_v: float) -> str:
@@ -57,10 +54,10 @@ def sensor_status(voltage_v: float) -> str:
 
     Returns
     -------
-    str : "OK", "UNPOWERED/DISCONNECTED", or "OVER-RANGE"
+    str : one of "OK", "UNPOWERED/DISCONNECTED", "OVER-RANGE"
     """
-    if voltage_v < V_MIN * 0.9:   # allow 10% tolerance below live-zero
+    if voltage_v < V_MIN * 0.9:    # 10% tolerance below live-zero
         return "UNPOWERED/DISCONNECTED"
-    if voltage_v > V_MAX * 1.05:  # allow 5% tolerance above full-scale
+    if voltage_v > V_MAX * 1.05:   # 5% tolerance above full-scale
         return "OVER-RANGE"
     return "OK"
