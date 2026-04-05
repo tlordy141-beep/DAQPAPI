@@ -8,6 +8,3 @@ dist/
 build/
 .pytest_cache/
 data/
-plans/
-.claude/
-context/
